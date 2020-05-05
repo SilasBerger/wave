@@ -1,5 +1,5 @@
-use wave::sine;
-use wave::sine::{FragmentSpec, TrackSpec};
+use wave::audio;
+use wave::audio::{FragmentSpec, TrackSpec};
 use wave::util;
 use wave::pitch::{pitch, Note};
 use wave::output;
@@ -46,7 +46,7 @@ fn a_major_with_melody() {
 }
 
 fn bounce_and_export(filename: &str, fragments: &[FragmentSpec], track_spec: &TrackSpec) {
-    let data = sine::bounce(fragments, track_spec);
+    let data = audio::bounce(fragments, track_spec);
     let wav_encoded = output::encode_wav(data, &track_spec);
     write_to_file(filename, &wav_encoded);
 }

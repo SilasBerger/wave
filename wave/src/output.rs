@@ -1,6 +1,6 @@
 // With lots of help from https://www.youtube.com/watch?v=odeWLp96fdo.
 
-use crate::sine::TrackSpec;
+use crate::audio::TrackSpec;
 
 pub fn encode_wav(mut audio: Vec<u8>, track: &TrackSpec) -> Vec<u8> {
     let mut buf = Vec::new();

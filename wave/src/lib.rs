@@ -1,4 +1,4 @@
 pub mod pitch;
-pub mod sine;
+pub mod audio;
 pub mod util;
 pub mod output;
