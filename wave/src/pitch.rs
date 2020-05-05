@@ -45,5 +45,5 @@ fn pitch_index(note: Note, register: u8) -> i32 {
 
 pub fn pitch(note: Note, register: u8) -> f64 {
     let delta_index = pitch_index(note, register) - pitch_index(Note::A, 4);
-    A4 * (2.0 as f64).powf(1.0 / 12.0).powi(delta_index)
+    A4 * 2.0f64.powf(1.0 / 12.0).powi(delta_index)
 }
