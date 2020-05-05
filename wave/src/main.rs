@@ -2,11 +2,34 @@ use wave::sine;
 use wave::sine::{FragmentSpec, TrackSpec};
 use wave::util;
 use wave::pitch::{pitch, Note};
+use wave::output;
 
 const SAMPLE_RATE: u16 = 44100;
 
 fn main() {
-    the_licc();
+    the_licc_wav();
+}
+
+#[allow(dead_code)]
+fn the_licc_wav() {
+    let g = pitch(Note::G, 4);
+    let a = pitch(Note::A, 4);
+    let b = pitch(Note::B, 4);
+    let c = pitch(Note::C, 5);
+    let d = pitch(Note::D, 5);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8);
+    let fragments = vec![
+        FragmentSpec::note(1, a, 0.5),
+        FragmentSpec::note(1, b, 0.5),
+        FragmentSpec::note(1, c, 0.5),
+        FragmentSpec::note(1, d, 0.5),
+        FragmentSpec::note(2, b, 0.5),
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, a, 0.5)
+    ];
+    let wave = sine::bounce(&fragments, &track_spec);
+    let wav_encoded = output::encode_wav(wave, &track_spec);
+    write_to_file("the_licc.wav", &wav_encoded);
 }
 
 #[allow(dead_code)]

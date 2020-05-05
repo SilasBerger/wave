@@ -75,4 +75,16 @@ impl TrackSpec {
             subdivision
         }
     }
+
+    pub fn sample_rate(&self) -> u16 {
+        self.sample_rate
+    }
+
+    pub fn bpm(&self) -> u16 {
+        self.bpm
+    }
+
+    pub fn subdivision(&self) -> u8 {
+        self.subdivision
+    }
 }
