@@ -73,6 +73,7 @@ impl FragmentSpec {
     }
 }
 
+#[derive(Debug)]
 pub struct TrackSpec {
     sample_rate: u16,
     bpm: u16,

@@ -12,6 +12,7 @@ pub fn parse(song_spec: &str) -> Result<(), String> {
 
     let (header_lines, data_lines) = extract_header_and_data(&lines)?;
     let track_spec = parse_header(&header_lines);
+    println!("{:?}", track_spec);
 
     Ok(())
 }
@@ -79,24 +80,26 @@ fn parse_header(header_lines: &Vec<String>) -> Result<TrackSpec, String> {
         values.insert(split[0], split[1]);
     }
 
-    let sample_rate = blub::<u16>(&values)?;
-    println!("Sample rate: {}", sample_rate);
+    let sample_rate = parse_header_field::<u16>(&values, "sample_rate")?;
+    let bpm = parse_header_field::<u16>(&values, "bpm")?;
+    let subdivision = parse_header_field::<u8>(&values, "subdivision")?;
+    let freq_a4 = parse_header_field::<f64>(&values, "freq_a4")?;
 
-    Err("".to_string())
+    Ok(TrackSpec::new(sample_rate, bpm, subdivision, freq_a4))
 }
 
-fn blub<T: FromStr>(map: &HashMap<&str, &str>) -> Result<T, String> {
-    let value = map.get("sample_rate");
+fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Result<T, String> {
+    let value = map.get(key);
     let value = match value {
         Some(v) => *v,
-        None => return Err("Missing key.".to_string())
+        None => return Err(format!("Header field not found: {}.", key))
     };
-    let sample_rate = value.parse::<T>();
-    let sample_rate = match sample_rate {
+    let value = value.parse::<T>();
+    let value = match value {
         Ok(v) => v,
-        Err(_) => return Err("sdf".to_string())
+        Err(_) => return Err(format!("Invalid type for header field: {}.", key))
     };
-    Ok(sample_rate)
+    Ok(value)
 }
 
 

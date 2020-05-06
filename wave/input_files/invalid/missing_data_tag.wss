@@ -4,6 +4,7 @@
 sample_rate=44100
 freq_a4=440.0
 subdivision=8
+bpm=120
 volume=0.5
 
 1 A4
