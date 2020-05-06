@@ -1,23 +1,24 @@
 use wave::audio;
 use wave::audio::{FragmentSpec, TrackSpec};
 use wave::util;
-use wave::pitch::{pitch, Note};
+use wave::pitch::{PitchGenerator, TwelveTET, Note};
 use wave::output;
 
 const SAMPLE_RATE: u16 = 44100;
 
 fn main() {
-    with_rest();
+    the_licc();
 }
 
 #[allow(dead_code)]
 fn with_rest() {
-    let g = pitch(Note::G, 4);
-    let a = pitch(Note::A, 4);
-    let c = pitch(Note::C, 5);
-    let d = pitch(Note::D, 5);
-    let e = pitch(Note::E, 5);
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 60, 8);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 60, 8, 440.0);
+    let pitch_gen = TwelveTET::new(track_spec.freq_a4());
+    let g = pitch_gen.get(Note::G, 4);
+    let a = pitch_gen.get(Note::A, 4);
+    let c = pitch_gen.get(Note::C, 5);
+    let d = pitch_gen.get(Note::D, 5);
+    let e = pitch_gen.get(Note::E, 5);
     let fragments = vec![
         FragmentSpec::note(1, a, 0.5),
         FragmentSpec::note(1, a, 0.5),
@@ -43,12 +44,14 @@ fn with_rest() {
 
 #[allow(dead_code)]
 fn the_licc() {
-    let g = pitch(Note::G, 4);
-    let a = pitch(Note::A, 4);
-    let b = pitch(Note::B, 4);
-    let c = pitch(Note::C, 5);
-    let d = pitch(Note::D, 5);
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0);
+    let pitch_gen = TwelveTET::new(track_spec.freq_a4());
+    let g = pitch_gen.get(Note::G, 4);
+    let a = pitch_gen.get(Note::A, 4);
+    let b = pitch_gen.get(Note::B, 4);
+    let c = pitch_gen.get(Note::C, 5);
+    let d = pitch_gen.get(Note::D, 5);
+
     let fragments = vec![
         FragmentSpec::note(1, a, 0.5),
         FragmentSpec::note(1, b, 0.5),
@@ -63,10 +66,11 @@ fn the_licc() {
 
 #[allow(dead_code)]
 fn a_major_with_melody() {
-    let a = pitch(Note::A, 4);
-    let c_sharp = pitch(Note::CSharp, 5);
-    let e = pitch(Note::E, 5);
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 80, 4);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 80, 4, 440.0);
+    let pitch_gen = TwelveTET::new(track_spec.freq_a4());
+    let a = pitch_gen.get(Note::A, 4);
+    let c_sharp = pitch_gen.get(Note::CSharp, 5);
+    let e = pitch_gen.get(Note::E, 5);
     let fragments = vec![
         FragmentSpec::note(1, a, 0.5),
         FragmentSpec::note(1, c_sharp, 0.5),

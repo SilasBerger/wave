@@ -76,15 +76,17 @@ impl FragmentSpec {
 pub struct TrackSpec {
     sample_rate: u16,
     bpm: u16,
-    subdivision: u8
+    subdivision: u8,
+    freq_a4: f64
 }
 
 impl TrackSpec {
-    pub fn new(sample_rate: u16, bpm: u16, subdivision: u8) -> TrackSpec {
+    pub fn new(sample_rate: u16, bpm: u16, subdivision: u8, freq_a4: f64) -> TrackSpec {
         TrackSpec {
             sample_rate,
             bpm,
-            subdivision
+            subdivision,
+            freq_a4
         }
     }
 
@@ -98,5 +100,9 @@ impl TrackSpec {
 
     pub fn subdivision(&self) -> u8 {
         self.subdivision
+    }
+
+    pub fn freq_a4(&self) -> f64 {
+        self.freq_a4
     }
 }
