@@ -7,7 +7,7 @@ use wave::output;
 const SAMPLE_RATE: u16 = 44100;
 
 fn main() {
-    the_licc_with_chords();
+    the_licc_det();
 }
 
 #[allow(dead_code)]
@@ -39,6 +39,29 @@ fn with_rest() {
         FragmentSpec::note(2, c, 0.5),
     ];
     bounce_and_export("silence.wav", &fragments, &track_spec);
+}
+
+#[allow(dead_code)]
+fn the_licc_det() {
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0);
+    let pitch_gen = TwelveTET::new(track_spec.freq_a4());
+    let g = pitch_gen.get(Note::G, 4);
+    let a = pitch_gen.det(Note::A, 4, 0);
+    let b = pitch_gen.det(Note::B, 4, 30);
+    let b_2 = pitch_gen.det(Note::B, 4, -30);
+    let c = pitch_gen.det(Note::C, 5, -12);
+    let d = pitch_gen.det(Note::D, 5, -20);
+
+    let fragments = vec![
+        FragmentSpec::note(1, a, 0.5),
+        FragmentSpec::note(1, b, 0.5),
+        FragmentSpec::note(1, c, 0.5),
+        FragmentSpec::note(1, d, 0.5),
+        FragmentSpec::note(2, b_2, 0.5),
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, a, 0.5)
+    ];
+    bounce_and_export("the_licc_det.wav", &fragments, &track_spec);
 }
 
 #[allow(dead_code)]

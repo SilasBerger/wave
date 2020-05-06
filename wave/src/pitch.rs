@@ -22,6 +22,7 @@ pub enum Note {
 
 pub trait PitchGenerator {
     fn get(&self, note: Note, octave: u8) -> f64;
+    fn det(&self, note: Note, octave: u8, det_cents: i8) -> f64;
 }
 
 pub struct TwelveTET {
@@ -63,5 +64,11 @@ impl PitchGenerator for TwelveTET {
     fn get(&self, note: Note, octave: u8) -> f64 {
         let delta_index = self.pitch_index(note, octave) - self.pitch_index(Note::A, 4);
         self.freq_a4 * 2.0f64.powf(1.0 / 12.0).powi(delta_index)
+    }
+
+    fn det(&self, note: Note, octave: u8, det_cents: i8) -> f64 {
+        let index_det = self.pitch_index(note, octave) as f64 + (det_cents as f64 / 100.0);
+        let delta_index = index_det - self.pitch_index(Note::A, 4) as f64;
+        self.freq_a4 * 2.0f64.powf(1.0 / 12.0).powf(delta_index)
     }
 }
