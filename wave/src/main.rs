@@ -7,7 +7,38 @@ use wave::output;
 const SAMPLE_RATE: u16 = 44100;
 
 fn main() {
-    a_major_with_melody();
+    with_rest();
+}
+
+#[allow(dead_code)]
+fn with_rest() {
+    let g = pitch(Note::G, 4);
+    let a = pitch(Note::A, 4);
+    let c = pitch(Note::C, 5);
+    let d = pitch(Note::D, 5);
+    let e = pitch(Note::E, 5);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 60, 8);
+    let fragments = vec![
+        FragmentSpec::note(1, a, 0.5),
+        FragmentSpec::note(1, a, 0.5),
+        FragmentSpec::note(1, c, 0.5),
+        FragmentSpec::note(1, c, 0.5),
+        FragmentSpec::note(1, e, 0.5),
+        FragmentSpec::note(1, e, 0.5),
+        FragmentSpec::note(2, d, 0.5),
+        FragmentSpec::rest(2),
+
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, g, 0.5),
+        FragmentSpec::note(1, d, 0.5),
+        FragmentSpec::note(1, d, 0.5),
+        FragmentSpec::note(2, c, 0.5),
+        FragmentSpec::rest(2),
+    ];
+    bounce_and_export("silence.wav", &fragments, &track_spec);
 }
 
 #[allow(dead_code)]

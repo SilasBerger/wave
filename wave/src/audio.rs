@@ -13,6 +13,10 @@ fn wave_fragment(fragment: &FragmentSpec, track: &TrackSpec, ms_per_value: f64) 
     let nsamples = num_samples.round() as usize;
     let mut buf = Vec::with_capacity(nsamples);
     let num_freqs = fragment.frequencies.len() as usize;
+    if num_freqs == 0 {
+        buf = vec![0u8; nsamples];
+        return buf;
+    }
     for t in 0..nsamples {
         let mut sample = 0.0;
         for i in 0..num_freqs {
@@ -57,6 +61,14 @@ impl FragmentSpec {
             value,
             frequencies: vec![frequency],
             amplitude
+        }
+    }
+
+    pub fn rest(value: u64) -> FragmentSpec {
+        FragmentSpec {
+            value,
+            frequencies: vec![],
+            amplitude: 0f64
         }
     }
 }
