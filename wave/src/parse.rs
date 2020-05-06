@@ -79,19 +79,24 @@ fn parse_header(header_lines: &Vec<String>) -> Result<TrackSpec, String> {
         values.insert(split[0], split[1]);
     }
 
-    let sample_rate = values.get("sample_rate");
-    if sample_rate.is_none() {
-        return Err("sample_rate is required.".to_string());
-    }
-    let sample_rate = sample_rate.unwrap();
-    let sample_rate = sample_rate.parse::<u16>();
-    if sample_rate.is_err() {
-        return Err("Invalid value for sample_rate.".to_string());
-    }
-    let sample_rate = sample_rate.unwrap();
+    let sample_rate = blub::<u16>(&values)?;
     println!("Sample rate: {}", sample_rate);
 
     Err("".to_string())
+}
+
+fn blub<T: FromStr>(map: &HashMap<&str, &str>) -> Result<T, String> {
+    let value = map.get("sample_rate");
+    let value = match value {
+        Some(v) => *v,
+        None => return Err("Missing key.".to_string())
+    };
+    let sample_rate = value.parse::<T>();
+    let sample_rate = match sample_rate {
+        Ok(v) => v,
+        Err(_) => return Err("sdf".to_string())
+    };
+    Ok(sample_rate)
 }
 
 
