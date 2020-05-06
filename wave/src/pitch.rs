@@ -1,5 +1,3 @@
-const A4: f64 = 440.0;
-
 pub enum Note {
     A,
     ASharp,

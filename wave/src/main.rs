@@ -1,13 +1,26 @@
-use wave::audio;
+use wave::{audio, parse};
 use wave::audio::{FragmentSpec, TrackSpec};
 use wave::util;
 use wave::pitch::{PitchGenerator, TwelveTET, Note};
 use wave::output;
+use std::{fs, process};
 
 const SAMPLE_RATE: u16 = 44100;
 
 fn main() {
-    the_licc_det();
+    basic_input_file();
+}
+
+#[allow(dead_code)]
+fn basic_input_file() {
+    let filename = "input_files/the_licc.wss";
+    let contents = read_input_or_exit(filename);
+    let parse_result = parse::parse(&contents);
+    if let Err(e) = parse_result {
+        eprintln!("Unable to parse input file {}: {}", filename, e);
+    } else {
+        println!("Successfully parsed {}", filename);
+    }
 }
 
 #[allow(dead_code)]
@@ -140,5 +153,14 @@ fn write_to_file(filename: &str, buf: &[u8]) {
     } else {
         println!("Successfully wrote file {}", filename);
     }
+}
+
+fn read_input_or_exit(filename: &str) -> String {
+    let contents = fs::read_to_string(filename);
+    if let Err(e) = contents {
+        eprintln!("Unable to read input file {}: {}", filename, e);
+        process::exit(1);
+    }
+    contents.unwrap()
 }
 

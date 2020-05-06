@@ -1,0 +1,13 @@
+// The "The Lick" Meme
+sample_rate=44100
+freq_a4=440.0
+subdivision=8
+volume=0.5
+
+1 A4
+1 B4
+1 C5
+1 D5
+2 B4
+1 G4
+1 A4 C5 E5 0.8
