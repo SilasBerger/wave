@@ -109,10 +109,9 @@ fn parse_data(lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
 }
 
 fn parse_data_line(line: &str) -> Result<ParsedFragment, String> {
-    let res = parse_pitch("C#4");
-    if let Err(e) = res {
-        println!("Failed to parse pitch: {}", e);
-    }
+    let pitch_txt = "Fb12-16";
+    let res = parse_pitch(pitch_txt);
+    println!("Result of parsing pitch {}: {:?}", pitch_txt, res);
 
     let error_msg = format!("Invalid data line: {}", line);
     let tokens: Vec<_> = line.split(" ").collect();
@@ -132,8 +131,16 @@ fn parse_pitch(token: &str) -> Result<ParsedPitch, String> {
         None => return Err(error_msg)
     };
 
-    let note_name = caps.get(1).unwrap().as_str();
+    // Find note representation.
+    let note = match Note::for_name(caps.get(1).unwrap().as_str()) {
+        Some(n) => n,
+        None => return Err(error_msg)
+    };
+
+    // Find octave value.
     let octave = convert_value::<u8>(caps.get(2).unwrap().as_str(), &error_msg)?;
+
+    //Find detune value
     let detune_spec = caps.get(3).unwrap().as_str();
     let detune = if detune_spec.is_empty() {
         0i8
@@ -141,10 +148,7 @@ fn parse_pitch(token: &str) -> Result<ParsedPitch, String> {
         convert_value::<i8>(detune_spec, "")?
     };
 
-    println!("Note name: {}", note_name);
-    println!("Octave: {}", octave);
-    println!("Detune: {}", detune);
-    Err(format!("It's actually okay, I'm just not there yet."))
+    Ok(ParsedPitch::from(note, octave, detune))
 }
 
 fn convert_value<T: FromStr>(raw: &str, error_msg: &str) -> Result<T, String> {
@@ -169,6 +173,7 @@ impl ParsedFragment {
     }
 }
 
+#[derive(Debug)]
 pub struct ParsedPitch {
     note: Note,
     octave: u8,

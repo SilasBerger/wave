@@ -1,8 +1,11 @@
+#[derive(Debug)]
 pub enum Note {
     A,
     ASharp,
     BFlat,
     B,
+    BSharp,
+    CFlat,
     C,
     CSharp,
     DFlat,
@@ -10,12 +13,43 @@ pub enum Note {
     DSharp,
     EFlat,
     E,
+    ESharp,
+    FFlat,
     F,
     FSharp,
     GFlat,
     G,
     GSharp,
     AFlat
+}
+
+impl Note {
+    pub fn for_name(name: &str) -> Option<Note> {
+        match name {
+            "A" => Some(Note::A),
+            "A#" => Some(Note::ASharp),
+            "Bb" => Some(Note::BFlat),
+            "B" => Some(Note::B),
+            "B#" => Some(Note::BSharp),
+            "Cb" => Some(Note::CFlat),
+            "C" => Some(Note::C),
+            "C#" => Some(Note::CSharp),
+            "Db" => Some(Note::DFlat),
+            "D" => Some(Note::D),
+            "D#" => Some(Note::DSharp),
+            "Eb" => Some(Note::EFlat),
+            "E" => Some(Note::E),
+            "E#" => Some(Note::ESharp),
+            "Fb" => Some(Note::FFlat),
+            "F" => Some(Note::F),
+            "F#" => Some(Note::FSharp),
+            "Gb" => Some(Note::GFlat),
+            "G" => Some(Note::G),
+            "G#" => Some(Note::GSharp),
+            "Ab" => Some(Note::AFlat),
+            _ => None
+        }
+    }
 }
 
 pub trait PitchGenerator {
@@ -36,6 +70,7 @@ impl TwelveTET {
 
     fn pitch_index(&self, note: Note, octave: u8) -> i32 {
         let base_index = match note {
+            Note::BSharp => 1,
             Note::C => 1,
             Note::CSharp => 2,
             Note::DFlat => 2,
@@ -43,6 +78,8 @@ impl TwelveTET {
             Note::DSharp => 4,
             Note::EFlat => 4,
             Note::E => 5,
+            Note::ESharp => 6,
+            Note::FFlat => 5,
             Note::F => 6,
             Note::FSharp => 7,
             Note::GFlat => 7,
@@ -52,7 +89,8 @@ impl TwelveTET {
             Note::A => 10,
             Note::ASharp => 11,
             Note::BFlat => 11,
-            Note::B => 12
+            Note::B => 12,
+            Note::CFlat => 12,
         };
         base_index + (octave * 12) as i32
     }
