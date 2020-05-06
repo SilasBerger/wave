@@ -1,3 +1,7 @@
+use crate::audio::TrackSpec;
+use std::collections::HashMap;
+use std::str::FromStr;
+
 pub fn parse(song_spec: &str) -> Result<(), String> {
     let lines: Vec<_> = song_spec.lines()
         .into_iter()
@@ -7,16 +11,7 @@ pub fn parse(song_spec: &str) -> Result<(), String> {
         .collect();
 
     let (header_lines, data_lines) = extract_header_and_data(&lines)?;
-
-    println!("\nHeader lines:");
-    for line in header_lines {
-        println!("{}", line)
-    }
-
-    println!("\nData lines:");
-    for line in data_lines {
-        println!("{}", line);
-    }
+    let track_spec = parse_header(&header_lines);
 
     Ok(())
 }
@@ -24,19 +19,13 @@ pub fn parse(song_spec: &str) -> Result<(), String> {
 fn extract_header_and_data(lines: &Vec<String>) -> Result<(Vec<String>, Vec<String>), String> {
     let (idx_header, idx_data) = find_chunk_tag_indices(&lines)?;
 
-    // TODO: It would be nice if this could just take ownership of the strings it needs, rather
-    // than create copies. The two collections are disjoint anyway. Is there a way for us to move
-    // a string out of a vec and still have access to the "rest" of that vec?
-    let header_lines: Vec<String> = lines.iter()
-        .skip_while(|line| *line != "#header")
-        .take_while(|line| *line != "#data")
+    // TODO: It would be nice to MOVE lines, instead of copying them.
+    let header_lines: Vec<_> = lines[idx_header+1..idx_data].iter()
         .map(|line| String::from(line))
         .collect();
 
-    // TODO: Same here - copying would be better than moving
-    let data_lines: Vec<_> = lines.iter()
-        .skip_while(|line| *line != "#data")
-        .skip(1)
+    // TODO: Same here.
+    let data_lines: Vec<_> = lines[idx_data+1.. ].iter()
         .map(|line| String::from(line))
         .collect();
 
@@ -73,12 +62,38 @@ fn find_chunk_tag_indices(lines: &Vec<String>) -> Result<(usize, usize), String>
     if !data_tag_found {
         return Err("Missing #data tag.".to_string());
     }
-    if idx_data >= idx_header {
+    if idx_header >= idx_data {
         return Err("#header tag must come before #data tag.".to_string())
     }
 
     Ok((idx_header, idx_data))
 }
+
+fn parse_header(header_lines: &Vec<String>) -> Result<TrackSpec, String> {
+    let mut values = HashMap::new();
+    for line in header_lines {
+        let split: Vec<_> = line.split("=").collect();
+        if split.len() != 2 {
+            return Err(format!("Line '{}' does not match format 'key=value'.", line));
+        }
+        values.insert(split[0], split[1]);
+    }
+
+    let sample_rate = values.get("sample_rate");
+    if sample_rate.is_none() {
+        return Err("sample_rate is required.".to_string());
+    }
+    let sample_rate = sample_rate.unwrap();
+    let sample_rate = sample_rate.parse::<u16>();
+    if sample_rate.is_err() {
+        return Err("Invalid value for sample_rate.".to_string());
+    }
+    let sample_rate = sample_rate.unwrap();
+    println!("Sample rate: {}", sample_rate);
+
+    Err("".to_string())
+}
+
 
 #[cfg(test)]
 mod tests {
