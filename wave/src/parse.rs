@@ -2,7 +2,7 @@ use crate::audio::TrackSpec;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-pub fn parse(song_spec: &str) -> Result<(), String> {
+pub fn parse(song_spec: &str) -> Result<TrackSpec, String> {
     let lines: Vec<_> = song_spec.lines()
         .into_iter()
         .map(|line| String::from(line.trim()))
@@ -11,10 +11,7 @@ pub fn parse(song_spec: &str) -> Result<(), String> {
         .collect();
 
     let (header_lines, data_lines) = extract_header_and_data(&lines)?;
-    let track_spec = parse_header(&header_lines);
-    println!("{:?}", track_spec);
-
-    Ok(())
+    parse_header(&header_lines)
 }
 
 fn extract_header_and_data(lines: &Vec<String>) -> Result<(Vec<String>, Vec<String>), String> {
@@ -84,8 +81,9 @@ fn parse_header(header_lines: &Vec<String>) -> Result<TrackSpec, String> {
     let bpm = parse_header_field::<u16>(&values, "bpm")?;
     let subdivision = parse_header_field::<u8>(&values, "subdivision")?;
     let freq_a4 = parse_header_field::<f64>(&values, "freq_a4")?;
+    let volume = parse_header_field::<f64>(&values, "volume")?;
 
-    Ok(TrackSpec::new(sample_rate, bpm, subdivision, freq_a4))
+    Ok(TrackSpec::new(sample_rate, bpm, subdivision, freq_a4, volume))
 }
 
 fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Result<T, String> {

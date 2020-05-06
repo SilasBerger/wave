@@ -78,16 +78,18 @@ pub struct TrackSpec {
     sample_rate: u16,
     bpm: u16,
     subdivision: u8,
-    freq_a4: f64
+    freq_a4: f64,
+    volume: f64
 }
 
 impl TrackSpec {
-    pub fn new(sample_rate: u16, bpm: u16, subdivision: u8, freq_a4: f64) -> TrackSpec {
+    pub fn new(sample_rate: u16, bpm: u16, subdivision: u8, freq_a4: f64, volume: f64) -> TrackSpec {
         TrackSpec {
             sample_rate,
             bpm,
             subdivision,
-            freq_a4
+            freq_a4,
+            volume
         }
     }
 
@@ -105,5 +107,9 @@ impl TrackSpec {
 
     pub fn freq_a4(&self) -> f64 {
         self.freq_a4
+    }
+
+    pub fn volume(&self) -> f64 {
+        self.volume
     }
 }

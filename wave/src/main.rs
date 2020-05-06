@@ -18,14 +18,16 @@ fn basic_input_file() {
     let parse_result = parse::parse(&contents);
     if let Err(e) = parse_result {
         eprintln!("Unable to parse input file {}: {}", filename, e);
-    } else {
-        println!("Successfully parsed {}", filename);
+        return;
     }
+    println!("Successfully parsed {}", filename);
+    let track_spec = parse_result.unwrap();
+    println!("{:?}", track_spec);
 }
 
 #[allow(dead_code)]
-fn with_rest() {
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 60, 8, 440.0);
+fn sound_of_silence() {
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 60, 8, 440.0, 0.5);
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let g = pitch_gen.get(Note::G, 4);
     let a = pitch_gen.get(Note::A, 4);
@@ -33,30 +35,30 @@ fn with_rest() {
     let d = pitch_gen.get(Note::D, 5);
     let e = pitch_gen.get(Note::E, 5);
     let fragments = vec![
-        FragmentSpec::note(1, a, 0.5),
-        FragmentSpec::note(1, a, 0.5),
-        FragmentSpec::note(1, c, 0.5),
-        FragmentSpec::note(1, c, 0.5),
-        FragmentSpec::note(1, e, 0.5),
-        FragmentSpec::note(1, e, 0.5),
-        FragmentSpec::note(2, d, 0.5),
+        FragmentSpec::note(1, a, track_spec.volume()),
+        FragmentSpec::note(1, a, track_spec.volume()),
+        FragmentSpec::note(1, c, track_spec.volume()),
+        FragmentSpec::note(1, c, track_spec.volume()),
+        FragmentSpec::note(1, e, track_spec.volume()),
+        FragmentSpec::note(1, e, track_spec.volume()),
+        FragmentSpec::note(2, d, track_spec.volume()),
         FragmentSpec::rest(2),
 
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, d, 0.5),
-        FragmentSpec::note(1, d, 0.5),
-        FragmentSpec::note(2, c, 0.5),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, d, track_spec.volume()),
+        FragmentSpec::note(1, d, track_spec.volume()),
+        FragmentSpec::note(2, c, track_spec.volume()),
     ];
     bounce_and_export("silence.wav", &fragments, &track_spec);
 }
 
 #[allow(dead_code)]
 fn the_licc_det() {
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0, 0.5);
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let g = pitch_gen.get(Note::G, 4);
     let a = pitch_gen.det(Note::A, 4, 0);
@@ -66,20 +68,20 @@ fn the_licc_det() {
     let d = pitch_gen.det(Note::D, 5, -20);
 
     let fragments = vec![
-        FragmentSpec::note(1, a, 0.5),
-        FragmentSpec::note(1, b, 0.5),
-        FragmentSpec::note(1, c, 0.5),
-        FragmentSpec::note(1, d, 0.5),
-        FragmentSpec::note(2, b_2, 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, a, 0.5)
+        FragmentSpec::note(1, a, track_spec.volume()),
+        FragmentSpec::note(1, b, track_spec.volume()),
+        FragmentSpec::note(1, c, track_spec.volume()),
+        FragmentSpec::note(1, d, track_spec.volume()),
+        FragmentSpec::note(2, b_2, track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, a, track_spec.volume())
     ];
     bounce_and_export("the_licc_det.wav", &fragments, &track_spec);
 }
 
 #[allow(dead_code)]
 fn the_licc_with_chords() {
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0, 0.5);
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let g = pitch_gen.get(Note::G, 4);
     let a = pitch_gen.get(Note::A, 4);
@@ -92,20 +94,20 @@ fn the_licc_with_chords() {
     let f_low = pitch_gen.get(Note::F, 4);
 
     let fragments = vec![
-        FragmentSpec::chord(1, vec![a, c_low, e_low], 0.5),
-        FragmentSpec::note(1, b, 0.5),
-        FragmentSpec::note(1, c, 0.5),
-        FragmentSpec::note(1, d, 0.5),
-        FragmentSpec::chord(2, vec![b, d, f_low], 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::chord(2, vec![a, c, e, g], 0.5)
+        FragmentSpec::chord(1, vec![a, c_low, e_low], track_spec.volume()),
+        FragmentSpec::note(1, b, track_spec.volume()),
+        FragmentSpec::note(1, c, track_spec.volume()),
+        FragmentSpec::note(1, d, track_spec.volume()),
+        FragmentSpec::chord(2, vec![b, d, f_low], track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::chord(2, vec![a, c, e, g], track_spec.volume())
     ];
     bounce_and_export("the_licc_with_chords.wav", &fragments, &track_spec);
 }
 
 #[allow(dead_code)]
 fn the_licc() {
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 180, 8, 440.0, 0.5);
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let g = pitch_gen.get(Note::G, 4);
     let a = pitch_gen.get(Note::A, 4);
@@ -114,29 +116,29 @@ fn the_licc() {
     let d = pitch_gen.get(Note::D, 5);
 
     let fragments = vec![
-        FragmentSpec::note(1, a, 0.5),
-        FragmentSpec::note(1, b, 0.5),
-        FragmentSpec::note(1, c, 0.5),
-        FragmentSpec::note(1, d, 0.5),
-        FragmentSpec::note(2, b, 0.5),
-        FragmentSpec::note(1, g, 0.5),
-        FragmentSpec::note(1, a, 0.5)
+        FragmentSpec::note(1, a, track_spec.volume()),
+        FragmentSpec::note(1, b, track_spec.volume()),
+        FragmentSpec::note(1, c, track_spec.volume()),
+        FragmentSpec::note(1, d, track_spec.volume()),
+        FragmentSpec::note(2, b, track_spec.volume()),
+        FragmentSpec::note(1, g, track_spec.volume()),
+        FragmentSpec::note(1, a, track_spec.volume())
     ];
     bounce_and_export("the_licc.wav", &fragments, &track_spec);
 }
 
 #[allow(dead_code)]
 fn a_major_with_melody() {
-    let track_spec = TrackSpec::new(SAMPLE_RATE, 80, 4, 440.0);
+    let track_spec = TrackSpec::new(SAMPLE_RATE, 80, 4, 440.0, 0.5);
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let a = pitch_gen.get(Note::A, 4);
     let c_sharp = pitch_gen.get(Note::CSharp, 5);
     let e = pitch_gen.get(Note::E, 5);
     let fragments = vec![
-        FragmentSpec::note(1, a, 0.5),
-        FragmentSpec::note(1, c_sharp, 0.5),
-        FragmentSpec::note(1, e, 0.3),
-        FragmentSpec::chord(2, vec![a, c_sharp, e], 0.5)
+        FragmentSpec::note(1, a, track_spec.volume()),
+        FragmentSpec::note(1, c_sharp, track_spec.volume()),
+        FragmentSpec::note(1, e, track_spec.volume() - 0.2),
+        FragmentSpec::chord(2, vec![a, c_sharp, e], track_spec.volume())
     ];
     bounce_and_export("melody_and_chord.wav", &fragments, &track_spec);
 }
