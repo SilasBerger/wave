@@ -1,6 +1,8 @@
-use crate::audio::TrackSpec;
 use std::collections::HashMap;
 use std::str::FromStr;
+use regex::Regex;
+use crate::audio::TrackSpec;
+use crate::pitch::Note;
 
 pub fn parse(song_spec: &str) -> Result<TrackSpec, String> {
     let lines: Vec<_> = song_spec.lines()
@@ -11,6 +13,7 @@ pub fn parse(song_spec: &str) -> Result<TrackSpec, String> {
         .collect();
 
     let (header_lines, data_lines) = extract_header_and_data(&lines)?;
+    let x = parse_data(&data_lines);
     parse_header(&header_lines)
 }
 
@@ -98,6 +101,88 @@ fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Resul
         Err(_) => return Err(format!("Invalid type for header field: {}.", key))
     };
     Ok(value)
+}
+
+fn parse_data(lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
+    let _res = parse_data_line("1 A4 C5+6 E5+12");
+    Err("".to_string())
+}
+
+fn parse_data_line(line: &str) -> Result<ParsedFragment, String> {
+    let res = parse_pitch("C#4");
+    if let Err(e) = res {
+        println!("Failed to parse pitch: {}", e);
+    }
+
+    let error_msg = format!("Invalid data line: {}", line);
+    let tokens: Vec<_> = line.split(" ").collect();
+    if tokens.len() < 2 {
+        return Err(format!("Need at least two arguments per line - invalid line: {}", line))
+    }
+    let note_val = convert_value::<u64>(&tokens[0], &error_msg)?;
+    Err("".to_string())
+}
+
+fn parse_pitch(token: &str) -> Result<ParsedPitch, String> {
+    // TODO: Use lazy_static here, to avoid re-compiling for every token.
+    let re: Regex = Regex::new(r"([a-gA-G][#b]?)(\d+)(([\+-]\d\d?\d?)?)").unwrap();
+    let error_msg = format!("Invalid pitch spec: {}", token);
+    let caps = match re.captures(token) {
+        Some(c) => c,
+        None => return Err(error_msg)
+    };
+
+    let note_name = caps.get(1).unwrap().as_str();
+    let octave = convert_value::<u8>(caps.get(2).unwrap().as_str(), &error_msg)?;
+    let detune_spec = caps.get(3).unwrap().as_str();
+    let detune = if detune_spec.is_empty() {
+        0i8
+    } else {
+        convert_value::<i8>(detune_spec, "")?
+    };
+
+    println!("Note name: {}", note_name);
+    println!("Octave: {}", octave);
+    println!("Detune: {}", detune);
+    Err(format!("It's actually okay, I'm just not there yet."))
+}
+
+fn convert_value<T: FromStr>(raw: &str, error_msg: &str) -> Result<T, String> {
+    let value = raw.parse::<T>();
+    match value {
+        Ok(v) => Ok(v),
+        Err(_) => Err("".to_string())
+    }
+}
+
+pub struct ParsedFragment {
+    value: u64,
+    pitches: Vec<ParsedPitch>
+}
+
+impl ParsedFragment {
+    fn from(value: u64, pitches: Vec<ParsedPitch>) -> ParsedFragment {
+        ParsedFragment {
+            value,
+            pitches
+        }
+    }
+}
+
+pub struct ParsedPitch {
+    note: Note,
+    octave: u8,
+    detune: i8,
+}
+
+impl ParsedPitch {
+    fn from(note: Note, octave: u8, detune: i8) -> ParsedPitch {
+        ParsedPitch {
+            note,
+            octave,
+            detune
+        }
+    }
 }
 
 
