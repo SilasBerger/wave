@@ -4,7 +4,7 @@ use regex::Regex;
 use crate::audio::TrackSpec;
 use crate::pitch::Note;
 
-pub fn parse(song_spec: &str) -> Result<TrackSpec, String> {
+pub fn parse(song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String> {
     let lines: Vec<_> = song_spec.lines()
         .into_iter()
         .map(|line| String::from(line.trim()))
@@ -13,8 +13,9 @@ pub fn parse(song_spec: &str) -> Result<TrackSpec, String> {
         .collect();
 
     let (header_lines, data_lines) = extract_header_and_data(&lines)?;
-    let x = parse_data(&data_lines);
-    parse_header(&header_lines)
+    let track_spec = parse_header(&header_lines)?;
+    let fragments = parse_data(&data_lines)?;
+    Ok((track_spec, fragments))
 }
 
 fn extract_header_and_data(lines: &Vec<String>) -> Result<(Vec<String>, Vec<String>), String> {
@@ -104,22 +105,25 @@ fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Resul
 }
 
 fn parse_data(lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
-    let _res = parse_data_line("1 A4 C5+6 E5+12");
-    Err("".to_string())
+    let mut fragments = Vec::with_capacity(lines.len());
+    for line in lines {
+        fragments.push(parse_data_line(line)?)
+    }
+    Ok(fragments)
 }
 
 fn parse_data_line(line: &str) -> Result<ParsedFragment, String> {
-    let pitch_txt = "Fb12-16";
-    let res = parse_pitch(pitch_txt);
-    println!("Result of parsing pitch {}: {:?}", pitch_txt, res);
-
     let error_msg = format!("Invalid data line: {}", line);
     let tokens: Vec<_> = line.split(" ").collect();
     if tokens.len() < 2 {
         return Err(format!("Need at least two arguments per line - invalid line: {}", line))
     }
     let note_val = convert_value::<u64>(&tokens[0], &error_msg)?;
-    Err("".to_string())
+    let mut pitches = Vec::with_capacity(tokens.len() - 1);
+    for token in &tokens[1..] {
+        pitches.push(parse_pitch(token)?)
+    }
+    Ok(ParsedFragment::from(note_val, pitches))
 }
 
 fn parse_pitch(token: &str) -> Result<ParsedPitch, String> {
@@ -159,6 +163,7 @@ fn convert_value<T: FromStr>(raw: &str, error_msg: &str) -> Result<T, String> {
     }
 }
 
+#[derive(Debug)]
 pub struct ParsedFragment {
     value: u64,
     pitches: Vec<ParsedPitch>
@@ -170,6 +175,14 @@ impl ParsedFragment {
             value,
             pitches
         }
+    }
+
+    pub fn value(&self) -> u64 {
+        self.value
+    }
+
+    pub fn pitches(&self) -> &[ParsedPitch] {
+        &self.pitches
     }
 }
 
@@ -187,6 +200,18 @@ impl ParsedPitch {
             octave,
             detune
         }
+    }
+
+    pub fn note(&self) -> Note {
+        self.note
+    }
+
+    pub fn octave(&self) -> u8 {
+        self.octave
+    }
+
+    pub fn detune(&self) -> i8 {
+        self.detune
     }
 }
 

@@ -2,16 +2,16 @@
 
 #header
 sample_rate=44100
-freq_a4=432.0
+freq_a4=440.0
 subdivision=8
 bpm=150
 volume=0.5
 
 #data
-1 A4
+1 A4 C4 E5
 1 B4
 1 C5
 1 D5
-2 B4
+2 B4 D5 F4
 1 G4
-1 A4 C5 E5
+1 A4 C5 E5 G4

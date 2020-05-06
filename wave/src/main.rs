@@ -3,6 +3,7 @@ use wave::audio::{FragmentSpec, TrackSpec};
 use wave::util;
 use wave::pitch::{PitchGenerator, TwelveTET, Note};
 use wave::output;
+use wave::parse::{ParsedFragment, ParsedPitch};
 use std::{fs, process};
 
 const SAMPLE_RATE: u16 = 44100;
@@ -13,16 +14,37 @@ fn main() {
 
 #[allow(dead_code)]
 fn basic_input_file() {
-    let filename = "input_files/the_licc.wss";
+    let filename = "input_files/the_licc_harmonized.wss";
     let contents = read_input_or_exit(filename);
-    let parse_result = parse::parse(&contents);
-    if let Err(e) = parse_result {
-        eprintln!("Unable to parse input file {}: {}", filename, e);
-        return;
+    process_input_file(filename, &contents);
+}
+
+fn process_input_file(filename: &str, contents: &str) {
+    // TODO: Capture errors.
+    // TODO: Accept output filename and / or take from input filename.
+    let (track_spec, fragments) = match parse::parse(&contents) {
+        Ok(tup) => tup,
+        Err(e) => {
+            eprintln!("Failed to parse input file {}: {}", filename, e);
+            return;
+        }
+    };
+    let pitch_gen = TwelveTET::new(track_spec.freq_a4());
+    let frag_specs = assemble_fragments(&fragments, &track_spec, &pitch_gen);
+    bounce_and_export("output.wav", &frag_specs, &track_spec);
+}
+
+fn assemble_fragments(parsed_fragments: &Vec<ParsedFragment>, track_spec: &TrackSpec, pitch_gen: &dyn PitchGenerator) -> Vec<FragmentSpec> {
+    let mut fragment_specs = Vec::with_capacity(parsed_fragments.len());
+    for parsed_fragment in parsed_fragments {
+        let mut pitches = Vec::with_capacity(parsed_fragment.pitches().len());
+        for parsed_pitch in parsed_fragment.pitches() {
+            let freq = pitch_gen.det(parsed_pitch.note(), parsed_pitch.octave(), parsed_pitch.detune());
+            pitches.push(freq);
+        }
+        fragment_specs.push(FragmentSpec::chord(parsed_fragment.value(), pitches, track_spec.volume()));
     }
-    println!("Successfully parsed {}", filename);
-    let track_spec = parse_result.unwrap();
-    println!("{:?}", track_spec);
+    return fragment_specs
 }
 
 #[allow(dead_code)]
