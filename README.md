@@ -13,7 +13,7 @@ First, build Wave by running `cargo build --release`. Then, use `target/release/
 To get started, it's easiest to use one of the pre-made input files. To generate an output file `./the_licc.wav` from an input file `./input_files/the_licc.wss`, run
 
 ```
-wave input_files/the_licc.wss the_licc.wav`
+wave input_files/the_licc.wss the_licc.wav
 ```
 
 Note that the second argument is optional. If it's not supplied, the output file will be `./output.wav` by default.
@@ -27,10 +27,10 @@ The header section consists of a list of `key=value` fields. The following field
 - `freq_a4`: Frequency of the reference pitch A4, `f64`.
 - `subdivision`: Number of note subdivisions per bar (e.g. `subdivision=8` -> 8 8th notes per bar), `u8`.
 - `bpm`: Tempo of the track, in beats per minute, `u16`.
-- `volume`: Volume of the resulting tack, in [0, 1], `f64`.
+- `volume`: Volume of the resulting track, in [0, 1], `f64`.
 
 #### Data
-The data section consits of an unlimited number of lines, where each line represents a "fragment". A fragment is either a single note, chord (group of notes), or rest, to be played for a given number of subdivisions (note value). Each line has the following format:
+The data section consists of an unlimited number of lines, where each line represents a "fragment". A fragment is either a single note, chord (group of notes), or rest, to be played for a given number of subdivisions (note value). Each line has the following format:
 
 `<value> <note> [note] ... [note]`
 
@@ -38,7 +38,7 @@ So, each line needs to start with a note value (e.g. 2, for a quarter note, if `
 
 `<note_name><octave>[detune]`
 
-Acceptable note names consist of a single upper-case letter, followed by a `#` for sharps, or a `b` for flats. Notes such as `Cb` (=B) or `E#` (=F) are allowed as well. The `octave` value is a number referring to the octave in which to play a given note. E.g. `A4` represents a note `A` in the 4th octave. Finally, a `detune` value can be used to detune a note by a given number of cents, upward or downward. For instance `A4+20` is a note `A4`, detuned by +20 cents, and `C5-12` is a note `C5`, detuned by -12 cents. Note that there is no whitespace between note names, octaves and detune specifiers. Additional whitespace between notes, or between the value and the first note is ignored.
+Acceptable note names consist of a single upper-case letter, followed by a `#` for sharps, or a `b` for flats. Notes such as `Cb` (=B) or `E#` (=F) are allowed as well. The `octave` value is a number referring to the octave in which to play a given note. E.g. `A4` represents a note `A` in the 4th octave. Finally, a `detune` value can be used to detune a note by a given number of cents, upward or downward. For instance `A4+20` is a note `A4`, detuned by +20 cents, and `C5-12` is a note `C5`, detuned by -12 cents. Note that there is no white-space between note names, octaves and detune specifiers. Additional white-space between notes, or between the value and the first note is ignored.
 
 To specify a rest, instead of a note or chord, use `-` in place of the first note specifier. For instance, a line which represents a rest with a duration of 4 subdivisions would be denoted as
 
