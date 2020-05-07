@@ -1,7 +1,6 @@
 use std::f64::consts::PI;
 use std::u16;
 
-
 fn partial_sample(freq: f64, t: u64, track: &TrackSpec) -> f64 {
     let constant = 2.0 * PI;
     let variable = (t as f64 * freq) / track.sample_rate as f64;
@@ -31,6 +30,8 @@ fn wave_fragment(fragment: &FragmentSpec, track: &TrackSpec, ms_per_value: f64) 
     buf
 }
 
+// TODO: It would be better to return a Vec<f64> here, with values in [-1.0, 1.0] and let consumers
+// map to integers at their preferred bit-depth.
 pub fn bounce(fragments: &[FragmentSpec], track: &TrackSpec) -> Vec<u16>{
     let ms_per_beat = 60_000.0 / track.bpm as f64;
     let values_per_beat = track.subdivision as f64 / 4.0;
