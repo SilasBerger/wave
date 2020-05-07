@@ -22,14 +22,14 @@ fn read_cmd_args() -> Option<(String, String)> {
 
 fn process_and_export(in_filename: &str, out_filename: &str) {
     let contents = read_input_or_exit(in_filename);
-    let wav_encoded = match wave::text_to_wav_bytes(&contents) {
+    let wav_encoded = match wave::wav_export_from_text(&contents) {
         Ok(we) => we,
         Err(e) => {
             eprintln!("Failed to get wav encoded data for file {}: {}", in_filename, e);
             return;
         }
     };
-    write_to_file(out_filename, &wav_encoded);
+    // write_to_file(out_filename, &wav_encoded);
 }
 
 fn write_to_file(filename: &str, buf: &[u8]) {

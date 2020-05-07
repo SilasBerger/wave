@@ -1,0 +1,29 @@
+#header
+sample_rate=44100
+freq_a4=440.0
+subdivision=16
+bpm=80
+volume=0.7
+
+#data
+4 C4 E5 G5 D4
+1 C5
+1 D5
+1 E5
+1 F5
+1 G5 B5 C4
+1 -
+2 C5
+4 G5 B5 C4
+1 G5 B5 C4
+1 F5 A5 C4
+1 E5 G5 B4
+1 D5 F5 A4
+1 E5 G5 B4
+1 D5
+1 -
+1 E5
+1 D5
+1 C5
+1 B4
+4 C5 E4 G4 B4

@@ -1,4 +1,5 @@
 use std::f64::consts::PI;
+use std::u16;
 
 
 fn partial_sample(freq: f64, t: u64, track: &TrackSpec) -> f64 {
@@ -7,14 +8,14 @@ fn partial_sample(freq: f64, t: u64, track: &TrackSpec) -> f64 {
     (variable * constant).sin()
 }
 
-fn wave_fragment(fragment: &FragmentSpec, track: &TrackSpec, ms_per_value: f64) -> Vec<u8> {
+fn wave_fragment(fragment: &FragmentSpec, track: &TrackSpec, ms_per_value: f64) -> Vec<u16> {
     let millis = ms_per_value * fragment.value as f64;
     let num_samples = (millis * track.sample_rate as f64) / 1000.0;
     let nsamples = num_samples.round() as usize;
     let mut buf = Vec::with_capacity(nsamples);
     let num_freqs = fragment.frequencies.len() as usize;
     if num_freqs == 0 {
-        buf = vec![0u8; nsamples];
+        buf = vec![0u16; nsamples];
         return buf;
     }
     for t in 0..nsamples {
@@ -24,13 +25,13 @@ fn wave_fragment(fragment: &FragmentSpec, track: &TrackSpec, ms_per_value: f64) 
         }
         let amp_adjusted = sample * fragment.amplitude;
         let normalized = (amp_adjusted + num_freqs as f64) / (2.0 * num_freqs as f64);
-        let scaled = (normalized * 255.0).floor() as u8;
+        let scaled = (normalized * u16::MAX as f64).floor() as u16;
         buf.push(scaled);
     }
     buf
 }
 
-pub fn bounce(fragments: &[FragmentSpec], track: &TrackSpec) -> Vec<u8>{
+pub fn bounce(fragments: &[FragmentSpec], track: &TrackSpec) -> Vec<u16>{
     let ms_per_beat = 60_000.0 / track.bpm as f64;
     let values_per_beat = track.subdivision as f64 / 4.0;
     let ms_per_value = ms_per_beat / values_per_beat;
