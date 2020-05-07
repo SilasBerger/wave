@@ -65,7 +65,9 @@ impl Parser {
 
     fn parse_data_line(&self, line: &str) -> Result<ParsedFragment, String> {
         let error_msg = format!("Invalid data line: {}", line);
-        let tokens: Vec<_> = line.split(" ").collect(); // TODO: Filter out empty tokens.
+        let tokens: Vec<_> = line.split(" ")
+            .filter(|token| !token.is_empty())
+            .collect();
         if tokens.len() < 2 {
             return Err(format!("Need at least two arguments per line - invalid line: {}", line))
         }
