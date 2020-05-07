@@ -1,21 +1,35 @@
 use wave::util;
 use std::{fs, process};
+use std::env;
 
 fn main() {
-    from_input_file("input_files/the_licc_with_rests_and_spaces.wss");
+    let cmd_args = read_cmd_args();
+    if let None = &cmd_args {
+        eprintln!("Invalid number of arguments: Specify at least an input filename.");
+        return;
+    }
+    let (in_filename, out_filename) = cmd_args.unwrap();
+    process_and_export(&in_filename, &out_filename);
 }
 
-#[allow(dead_code)]
-fn from_input_file(filename: &str) {
-    let contents = read_input_or_exit(filename);
+fn read_cmd_args() -> Option<(String, String)> {
+    let args: Vec<_> = env::args().collect();
+    let in_filename = args.get(1)?;
+    let default_out_filename = String::from("output.wav");
+    let out_filename = args.get(2).unwrap_or(&default_out_filename);
+    Some((String::from(in_filename), String::from(out_filename)))
+}
+
+fn process_and_export(in_filename: &str, out_filename: &str) {
+    let contents = read_input_or_exit(in_filename);
     let wav_encoded = match wave::text_to_wav_bytes(&contents) {
         Ok(we) => we,
         Err(e) => {
-            eprintln!("Failed to get wav encoded data for file {}: {}", filename, e);
+            eprintln!("Failed to get wav encoded data for file {}: {}", in_filename, e);
             return;
         }
     };
-    write_to_file("output.wav", &wav_encoded);
+    write_to_file(out_filename, &wav_encoded);
 }
 
 fn write_to_file(filename: &str, buf: &[u8]) {
