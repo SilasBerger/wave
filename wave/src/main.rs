@@ -2,7 +2,7 @@ use wave::util;
 use std::{fs, process};
 
 fn main() {
-    from_input_file("input_files/the_licc_harmonized.wss");
+    from_input_file("input_files/the_licc_with_rest.wss");
 }
 
 #[allow(dead_code)]

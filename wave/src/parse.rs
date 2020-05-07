@@ -65,7 +65,7 @@ impl Parser {
 
     fn parse_data_line(&self, line: &str) -> Result<ParsedFragment, String> {
         let error_msg = format!("Invalid data line: {}", line);
-        let tokens: Vec<_> = line.split(" ").collect();
+        let tokens: Vec<_> = line.split(" ").collect(); // TODO: Filter out empty tokens.
         if tokens.len() < 2 {
             return Err(format!("Need at least two arguments per line - invalid line: {}", line))
         }
@@ -74,10 +74,17 @@ impl Parser {
         for token in &tokens[1..] {
             pitches.push(self.parse_pitch(token)?)
         }
-        Ok(ParsedFragment::from(note_val, pitches))
+        Ok(ParsedFragment::new(note_val, pitches))
     }
 
     fn parse_pitch(&self, token: &str) -> Result<ParsedPitch, String> {
+        if token == "-" {
+            // This is a rest.
+            // TODO: It would be better to encode this case in the regex as well.
+            // TODO: This theoretically allows for chords with rests + non-rests.
+            return Ok(ParsedPitch::rest());
+        }
+
         let error_msg = format!("Invalid pitch spec: {}", token);
         let caps = match self.pitch_spec_re.captures(token) {
             Some(c) => c,
@@ -101,7 +108,7 @@ impl Parser {
             convert_value::<i8>(detune_spec, "")?
         };
 
-        Ok(ParsedPitch::from(note, octave, detune))
+        Ok(ParsedPitch::new(note, octave, detune))
     }
 }
 
@@ -187,7 +194,7 @@ pub struct ParsedFragment {
 }
 
 impl ParsedFragment {
-    fn from(value: u64, pitches: Vec<ParsedPitch>) -> ParsedFragment {
+    fn new(value: u64, pitches: Vec<ParsedPitch>) -> ParsedFragment {
         ParsedFragment {
             value,
             pitches
@@ -211,11 +218,19 @@ pub struct ParsedPitch {
 }
 
 impl ParsedPitch {
-    fn from(note: Note, octave: u8, detune: i8) -> ParsedPitch {
+    fn new(note: Note, octave: u8, detune: i8) -> ParsedPitch {
         ParsedPitch {
             note,
             octave,
             detune
+        }
+    }
+
+    pub fn rest() -> ParsedPitch {
+        ParsedPitch {
+            note: Note::Rest,
+            octave: 1,
+            detune: 0
         }
     }
 

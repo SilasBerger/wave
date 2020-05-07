@@ -20,7 +20,8 @@ pub enum Note {
     GFlat,
     G,
     GSharp,
-    AFlat
+    AFlat,
+    Rest
 }
 
 impl Note {
@@ -70,6 +71,7 @@ impl TwelveTET {
 
     fn pitch_index(&self, note: Note, octave: u8) -> i32 {
         let base_index = match note {
+            Note::Rest => 0,
             Note::BSharp => 1,
             Note::C => 1,
             Note::CSharp => 2,
@@ -98,11 +100,17 @@ impl TwelveTET {
 
 impl PitchGenerator for TwelveTET {
     fn get(&self, note: Note, octave: u8) -> f64 {
+        if let Note::Rest = &note {
+            return 0.0;
+        }
         let delta_index = self.pitch_index(note, octave) - self.pitch_index(Note::A, 4);
         self.freq_a4 * 2.0f64.powf(1.0 / 12.0).powi(delta_index)
     }
 
     fn det(&self, note: Note, octave: u8, det_cents: i8) -> f64 {
+        if let Note::Rest = &note {
+            return 0.0;
+        }
         let index_det = self.pitch_index(note, octave) as f64 + (det_cents as f64 / 100.0);
         let delta_index = index_det - self.pitch_index(Note::A, 4) as f64;
         self.freq_a4 * 2.0f64.powf(1.0 / 12.0).powf(delta_index)
