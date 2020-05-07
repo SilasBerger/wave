@@ -1,13 +1,7 @@
 # Wave
 Wave is a simple text-based synthesizer written in Rust. Note that this is mostly a toy project and an exercise, rather than a productive application.
 
-## Repo Structure
-- `wave`: Core code base, contains the Rust project.
-- `wave-vis`: Utility tool for visualizing a wave form in `.pcm` format. Mostly irrelevant at this point.
-
 ## Usage
-All instructions in this section refer to the `./wave` directory, where the Rust project is located. 
-
 First, build Wave by running `cargo build --release`. Then, use `target/release/wave` (or `target/release/wave.exe` on Windows) for all further steps, wherever the command `wave` is used.
 
 To get started, it's easiest to use one of the pre-made input files. To generate an output file `./the_licc.wav` from an input file `./input_files/the_licc.wss`, run
