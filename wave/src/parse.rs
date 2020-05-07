@@ -5,17 +5,104 @@ use crate::audio::TrackSpec;
 use crate::pitch::Note;
 
 pub fn parse(song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String> {
-    let lines: Vec<_> = song_spec.lines()
-        .into_iter()
-        .map(|line| String::from(line.trim()))
-        .filter(|line| !line.is_empty()) // empty lines
-        .filter(|line| !line.starts_with("//")) // comments
-        .collect();
+    let re = Regex::new(r"([a-gA-G][#b]?)(\d+)(([\+-]\d\d?\d?)?)").unwrap();
+    let parser = Parser::new(re);
+    parser.parse(song_spec)
+}
 
-    let (header_lines, data_lines) = extract_header_and_data(&lines)?;
-    let track_spec = parse_header(&header_lines)?;
-    let fragments = parse_data(&data_lines)?;
-    Ok((track_spec, fragments))
+struct Parser {
+    pitch_spec_re: Regex
+}
+
+impl Parser {
+
+    fn new(pitch_spec_re: Regex) -> Parser {
+        Parser {
+            pitch_spec_re
+        }
+    }
+
+    fn parse(&self, song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String> {
+        let lines: Vec<_> = song_spec.lines()
+            .into_iter()
+            .map(|line| String::from(line.trim()))
+            .filter(|line| !line.is_empty()) // empty lines
+            .filter(|line| !line.starts_with("//")) // comments
+            .collect();
+
+        let (header_lines, data_lines) = extract_header_and_data(&lines)?;
+        let track_spec = self.parse_header(&header_lines)?;
+        let fragments = self.parse_data(&data_lines)?;
+        Ok((track_spec, fragments))
+    }
+
+    fn parse_header(&self, header_lines: &Vec<String>) -> Result<TrackSpec, String> {
+        let mut values = HashMap::new();
+        for line in header_lines {
+            let split: Vec<_> = line.split("=").collect();
+            if split.len() != 2 {
+                return Err(format!("Line '{}' does not match format 'key=value'.", line));
+            }
+            values.insert(split[0], split[1]);
+        }
+
+        let sample_rate = parse_header_field::<u16>(&values, "sample_rate")?;
+        let bpm = parse_header_field::<u16>(&values, "bpm")?;
+        let subdivision = parse_header_field::<u8>(&values, "subdivision")?;
+        let freq_a4 = parse_header_field::<f64>(&values, "freq_a4")?;
+        let volume = parse_header_field::<f64>(&values, "volume")?;
+
+        Ok(TrackSpec::new(sample_rate, bpm, subdivision, freq_a4, volume))
+    }
+
+    fn parse_data(&self, lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
+        let mut fragments = Vec::with_capacity(lines.len());
+        for line in lines {
+            fragments.push(self.parse_data_line(line)?)
+        }
+        Ok(fragments)
+    }
+
+    fn parse_data_line(&self, line: &str) -> Result<ParsedFragment, String> {
+        let error_msg = format!("Invalid data line: {}", line);
+        let tokens: Vec<_> = line.split(" ").collect();
+        if tokens.len() < 2 {
+            return Err(format!("Need at least two arguments per line - invalid line: {}", line))
+        }
+        let note_val = convert_value::<u64>(&tokens[0], &error_msg)?;
+        let mut pitches = Vec::with_capacity(tokens.len() - 1);
+        for token in &tokens[1..] {
+            pitches.push(self.parse_pitch(token)?)
+        }
+        Ok(ParsedFragment::from(note_val, pitches))
+    }
+
+    fn parse_pitch(&self, token: &str) -> Result<ParsedPitch, String> {
+        let error_msg = format!("Invalid pitch spec: {}", token);
+        let caps = match self.pitch_spec_re.captures(token) {
+            Some(c) => c,
+            None => return Err(error_msg)
+        };
+
+        // Find note representation.
+        let note = match Note::for_name(caps.get(1).unwrap().as_str()) {
+            Some(n) => n,
+            None => return Err(error_msg)
+        };
+
+        // Find octave value.
+        let octave = convert_value::<u8>(caps.get(2).unwrap().as_str(), &error_msg)?;
+
+        //Find detune value
+        let detune_spec = caps.get(3).unwrap().as_str();
+        let detune = if detune_spec.is_empty() {
+            0i8
+        } else {
+            convert_value::<i8>(detune_spec, "")?
+        };
+
+        Ok(ParsedPitch::from(note, octave, detune))
+    }
 }
 
 fn extract_header_and_data(lines: &Vec<String>) -> Result<(Vec<String>, Vec<String>), String> {
@@ -71,25 +158,6 @@ fn find_chunk_tag_indices(lines: &Vec<String>) -> Result<(usize, usize), String>
     Ok((idx_header, idx_data))
 }
 
-fn parse_header(header_lines: &Vec<String>) -> Result<TrackSpec, String> {
-    let mut values = HashMap::new();
-    for line in header_lines {
-        let split: Vec<_> = line.split("=").collect();
-        if split.len() != 2 {
-            return Err(format!("Line '{}' does not match format 'key=value'.", line));
-        }
-        values.insert(split[0], split[1]);
-    }
-
-    let sample_rate = parse_header_field::<u16>(&values, "sample_rate")?;
-    let bpm = parse_header_field::<u16>(&values, "bpm")?;
-    let subdivision = parse_header_field::<u8>(&values, "subdivision")?;
-    let freq_a4 = parse_header_field::<f64>(&values, "freq_a4")?;
-    let volume = parse_header_field::<f64>(&values, "volume")?;
-
-    Ok(TrackSpec::new(sample_rate, bpm, subdivision, freq_a4, volume))
-}
-
 fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Result<T, String> {
     let value = map.get(key);
     let value = match value {
@@ -104,62 +172,11 @@ fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Resul
     Ok(value)
 }
 
-fn parse_data(lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
-    let mut fragments = Vec::with_capacity(lines.len());
-    for line in lines {
-        fragments.push(parse_data_line(line)?)
-    }
-    Ok(fragments)
-}
-
-fn parse_data_line(line: &str) -> Result<ParsedFragment, String> {
-    let error_msg = format!("Invalid data line: {}", line);
-    let tokens: Vec<_> = line.split(" ").collect();
-    if tokens.len() < 2 {
-        return Err(format!("Need at least two arguments per line - invalid line: {}", line))
-    }
-    let note_val = convert_value::<u64>(&tokens[0], &error_msg)?;
-    let mut pitches = Vec::with_capacity(tokens.len() - 1);
-    for token in &tokens[1..] {
-        pitches.push(parse_pitch(token)?)
-    }
-    Ok(ParsedFragment::from(note_val, pitches))
-}
-
-fn parse_pitch(token: &str) -> Result<ParsedPitch, String> {
-    // TODO: Use lazy_static here, to avoid re-compiling for every token.
-    let re: Regex = Regex::new(r"([a-gA-G][#b]?)(\d+)(([\+-]\d\d?\d?)?)").unwrap();
-    let error_msg = format!("Invalid pitch spec: {}", token);
-    let caps = match re.captures(token) {
-        Some(c) => c,
-        None => return Err(error_msg)
-    };
-
-    // Find note representation.
-    let note = match Note::for_name(caps.get(1).unwrap().as_str()) {
-        Some(n) => n,
-        None => return Err(error_msg)
-    };
-
-    // Find octave value.
-    let octave = convert_value::<u8>(caps.get(2).unwrap().as_str(), &error_msg)?;
-
-    //Find detune value
-    let detune_spec = caps.get(3).unwrap().as_str();
-    let detune = if detune_spec.is_empty() {
-        0i8
-    } else {
-        convert_value::<i8>(detune_spec, "")?
-    };
-
-    Ok(ParsedPitch::from(note, octave, detune))
-}
-
 fn convert_value<T: FromStr>(raw: &str, error_msg: &str) -> Result<T, String> {
     let value = raw.parse::<T>();
     match value {
         Ok(v) => Ok(v),
-        Err(_) => Err("".to_string())
+        Err(_) => Err(error_msg.to_string())
     }
 }
 
