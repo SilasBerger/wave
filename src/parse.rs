@@ -131,10 +131,7 @@ fn extract_header_and_data(lines: &[String]) -> Result<(Vec<String>, Vec<String>
         .collect();
 
     // TODO: Same here.
-    let data_lines: Vec<_> = lines[idx_data + 1..]
-        .iter()
-        .map(String::from)
-        .collect();
+    let data_lines: Vec<_> = lines[idx_data + 1..].iter().map(String::from).collect();
 
     Ok((header_lines, data_lines))
 }
