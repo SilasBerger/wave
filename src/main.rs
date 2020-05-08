@@ -1,6 +1,6 @@
-use wave::util;
-use std::{fs, process};
 use std::env;
+use std::{fs, process};
+use wave::util;
 
 fn main() {
     let cmd_args = read_cmd_args();

@@ -32,7 +32,7 @@ fn wave_fragment(fragment: &FragmentSpec, track: &TrackSpec, ms_per_value: f64) 
 
 // TODO: It would be better to return a Vec<f64> here, with values in [-1.0, 1.0] and let consumers
 // map to integers at their preferred bit-depth.
-pub fn bounce(fragments: &[FragmentSpec], track: &TrackSpec) -> Vec<f64>{
+pub fn bounce(fragments: &[FragmentSpec], track: &TrackSpec) -> Vec<f64> {
     let ms_per_beat = 60_000.0 / track.bpm as f64;
     let values_per_beat = track.subdivision as f64 / 4.0;
     let ms_per_value = ms_per_beat / values_per_beat;
@@ -46,7 +46,7 @@ pub fn bounce(fragments: &[FragmentSpec], track: &TrackSpec) -> Vec<f64>{
 pub struct FragmentSpec {
     value: u64,
     frequencies: Vec<f64>,
-    amplitude: f64
+    amplitude: f64,
 }
 
 impl FragmentSpec {
@@ -54,7 +54,7 @@ impl FragmentSpec {
         FragmentSpec {
             value,
             frequencies,
-            amplitude
+            amplitude,
         }
     }
 
@@ -62,7 +62,7 @@ impl FragmentSpec {
         FragmentSpec {
             value,
             frequencies: vec![frequency],
-            amplitude
+            amplitude,
         }
     }
 
@@ -70,7 +70,7 @@ impl FragmentSpec {
         FragmentSpec {
             value,
             frequencies: vec![],
-            amplitude: 0f64
+            amplitude: 0f64,
         }
     }
 }
@@ -81,17 +81,23 @@ pub struct TrackSpec {
     bpm: u16,
     subdivision: u8,
     freq_a4: f64,
-    volume: f64
+    volume: f64,
 }
 
 impl TrackSpec {
-    pub fn new(sample_rate: u16, bpm: u16, subdivision: u8, freq_a4: f64, volume: f64) -> TrackSpec {
+    pub fn new(
+        sample_rate: u16,
+        bpm: u16,
+        subdivision: u8,
+        freq_a4: f64,
+        volume: f64,
+    ) -> TrackSpec {
         TrackSpec {
             sample_rate,
             bpm,
             subdivision,
             freq_a4,
-            volume
+            volume,
         }
     }
 

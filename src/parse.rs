@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use std::str::FromStr;
-use regex::Regex;
 use crate::audio::TrackSpec;
 use crate::pitch::Note;
+use regex::Regex;
+use std::collections::HashMap;
+use std::str::FromStr;
 
 pub fn parse(song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String> {
     let re = Regex::new(r"([a-gA-G][#b]?)(\d+)(([\+-]\d\d?\d?)?)").unwrap();
@@ -11,19 +11,17 @@ pub fn parse(song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String
 }
 
 struct Parser {
-    pitch_spec_re: Regex
+    pitch_spec_re: Regex,
 }
 
 impl Parser {
-
     fn new(pitch_spec_re: Regex) -> Parser {
-        Parser {
-            pitch_spec_re
-        }
+        Parser { pitch_spec_re }
     }
 
     fn parse(&self, song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String> {
-        let lines: Vec<_> = song_spec.lines()
+        let lines: Vec<_> = song_spec
+            .lines()
             .into_iter()
             .map(|line| String::from(line.trim()))
             .filter(|line| !line.is_empty()) // empty lines
@@ -41,7 +39,10 @@ impl Parser {
         for line in header_lines {
             let split: Vec<_> = line.split("=").collect();
             if split.len() != 2 {
-                return Err(format!("Line '{}' does not match format 'key=value'.", line));
+                return Err(format!(
+                    "Line '{}' does not match format 'key=value'.",
+                    line
+                ));
             }
             values.insert(split[0], split[1]);
         }
@@ -52,7 +53,13 @@ impl Parser {
         let freq_a4 = parse_header_field::<f64>(&values, "freq_a4")?;
         let volume = parse_header_field::<f64>(&values, "volume")?;
 
-        Ok(TrackSpec::new(sample_rate, bpm, subdivision, freq_a4, volume))
+        Ok(TrackSpec::new(
+            sample_rate,
+            bpm,
+            subdivision,
+            freq_a4,
+            volume,
+        ))
     }
 
     fn parse_data(&self, lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
@@ -65,11 +72,12 @@ impl Parser {
 
     fn parse_data_line(&self, line: &str) -> Result<ParsedFragment, String> {
         let error_msg = format!("Invalid data line: {}", line);
-        let tokens: Vec<_> = line.split(" ")
-            .filter(|token| !token.is_empty())
-            .collect();
+        let tokens: Vec<_> = line.split(" ").filter(|token| !token.is_empty()).collect();
         if tokens.len() < 2 {
-            return Err(format!("Need at least two arguments per line - invalid line: {}", line))
+            return Err(format!(
+                "Need at least two arguments per line - invalid line: {}",
+                line
+            ));
         }
         let note_val = convert_value::<u64>(&tokens[0], &error_msg)?;
         let mut pitches = Vec::with_capacity(tokens.len() - 1);
@@ -90,13 +98,13 @@ impl Parser {
         let error_msg = format!("Invalid pitch spec: {}", token);
         let caps = match self.pitch_spec_re.captures(token) {
             Some(c) => c,
-            None => return Err(error_msg)
+            None => return Err(error_msg),
         };
 
         // Find note representation.
         let note = match Note::for_name(caps.get(1).unwrap().as_str()) {
             Some(n) => n,
-            None => return Err(error_msg)
+            None => return Err(error_msg),
         };
 
         // Find octave value.
@@ -118,12 +126,14 @@ fn extract_header_and_data(lines: &Vec<String>) -> Result<(Vec<String>, Vec<Stri
     let (idx_header, idx_data) = find_chunk_tag_indices(&lines)?;
 
     // TODO: It would be nice to MOVE lines, instead of copying them.
-    let header_lines: Vec<_> = lines[idx_header+1..idx_data].iter()
+    let header_lines: Vec<_> = lines[idx_header + 1..idx_data]
+        .iter()
         .map(|line| String::from(line))
         .collect();
 
     // TODO: Same here.
-    let data_lines: Vec<_> = lines[idx_data+1.. ].iter()
+    let data_lines: Vec<_> = lines[idx_data + 1..]
+        .iter()
         .map(|line| String::from(line))
         .collect();
 
@@ -161,7 +171,7 @@ fn find_chunk_tag_indices(lines: &Vec<String>) -> Result<(usize, usize), String>
         return Err("Missing #data tag.".to_string());
     }
     if idx_header >= idx_data {
-        return Err("#header tag must come before #data tag.".to_string())
+        return Err("#header tag must come before #data tag.".to_string());
     }
 
     Ok((idx_header, idx_data))
@@ -171,12 +181,12 @@ fn parse_header_field<T: FromStr>(map: &HashMap<&str, &str>, key: &str) -> Resul
     let value = map.get(key);
     let value = match value {
         Some(v) => *v,
-        None => return Err(format!("Header field not found: {}.", key))
+        None => return Err(format!("Header field not found: {}.", key)),
     };
     let value = value.parse::<T>();
     let value = match value {
         Ok(v) => v,
-        Err(_) => return Err(format!("Invalid type for header field: {}.", key))
+        Err(_) => return Err(format!("Invalid type for header field: {}.", key)),
     };
     Ok(value)
 }
@@ -185,22 +195,19 @@ fn convert_value<T: FromStr>(raw: &str, error_msg: &str) -> Result<T, String> {
     let value = raw.parse::<T>();
     match value {
         Ok(v) => Ok(v),
-        Err(_) => Err(error_msg.to_string())
+        Err(_) => Err(error_msg.to_string()),
     }
 }
 
 #[derive(Debug)]
 pub struct ParsedFragment {
     value: u64,
-    pitches: Vec<ParsedPitch>
+    pitches: Vec<ParsedPitch>,
 }
 
 impl ParsedFragment {
     fn new(value: u64, pitches: Vec<ParsedPitch>) -> ParsedFragment {
-        ParsedFragment {
-            value,
-            pitches
-        }
+        ParsedFragment { value, pitches }
     }
 
     pub fn value(&self) -> u64 {
@@ -224,7 +231,7 @@ impl ParsedPitch {
         ParsedPitch {
             note,
             octave,
-            detune
+            detune,
         }
     }
 
@@ -232,7 +239,7 @@ impl ParsedPitch {
         ParsedPitch {
             note: Note::Rest,
             octave: 1,
-            detune: 0
+            detune: 0,
         }
     }
 
@@ -249,17 +256,16 @@ impl ParsedPitch {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::fs;
     use crate::parse;
+    use std::fs;
 
     const VALID_FILES_PATH: &str = "input_files/";
     const INVALID_FILES_PATH: &str = "input_files/invalid/";
 
     fn read_file_or_panic(filename: &str) -> String {
-        fs::read_to_string(filename).expect(&format!("File not found: {}", {filename}))
+        fs::read_to_string(filename).expect(&format!("File not found: {}", { filename }))
     }
 
     fn valid_file(filename: &str) -> String {

@@ -21,7 +21,7 @@ pub enum Note {
     G,
     GSharp,
     AFlat,
-    Rest
+    Rest,
 }
 
 impl Note {
@@ -48,7 +48,7 @@ impl Note {
             "G" => Some(Note::G),
             "G#" => Some(Note::GSharp),
             "Ab" => Some(Note::AFlat),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -59,14 +59,12 @@ pub trait PitchGenerator {
 }
 
 pub struct TwelveTET {
-    freq_a4: f64
+    freq_a4: f64,
 }
 
 impl TwelveTET {
     pub fn new(freq_a4: f64) -> TwelveTET {
-        TwelveTET {
-            freq_a4
-        }
+        TwelveTET { freq_a4 }
     }
 
     fn pitch_index(&self, note: Note, octave: u8) -> i32 {
