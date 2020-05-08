@@ -22,7 +22,6 @@ impl Parser {
     fn parse(&self, song_spec: &str) -> Result<(TrackSpec, Vec<ParsedFragment>), String> {
         let lines: Vec<_> = song_spec
             .lines()
-            .into_iter()
             .map(|line| String::from(line.trim()))
             .filter(|line| !line.is_empty()) // empty lines
             .filter(|line| !line.starts_with("//")) // comments
@@ -34,10 +33,10 @@ impl Parser {
         Ok((track_spec, fragments))
     }
 
-    fn parse_header(&self, header_lines: &Vec<String>) -> Result<TrackSpec, String> {
+    fn parse_header(&self, header_lines: &[String]) -> Result<TrackSpec, String> {
         let mut values = HashMap::new();
         for line in header_lines {
-            let split: Vec<_> = line.split("=").collect();
+            let split: Vec<_> = line.split('=').collect();
             if split.len() != 2 {
                 return Err(format!(
                     "Line '{}' does not match format 'key=value'.",
@@ -62,7 +61,7 @@ impl Parser {
         ))
     }
 
-    fn parse_data(&self, lines: &Vec<String>) -> Result<Vec<ParsedFragment>, String> {
+    fn parse_data(&self, lines: &[String]) -> Result<Vec<ParsedFragment>, String> {
         let mut fragments = Vec::with_capacity(lines.len());
         for line in lines {
             fragments.push(self.parse_data_line(line)?)
@@ -72,7 +71,7 @@ impl Parser {
 
     fn parse_data_line(&self, line: &str) -> Result<ParsedFragment, String> {
         let error_msg = format!("Invalid data line: {}", line);
-        let tokens: Vec<_> = line.split(" ").filter(|token| !token.is_empty()).collect();
+        let tokens: Vec<_> = line.split(' ').filter(|token| !token.is_empty()).collect();
         if tokens.len() < 2 {
             return Err(format!(
                 "Need at least two arguments per line - invalid line: {}",
@@ -122,25 +121,25 @@ impl Parser {
     }
 }
 
-fn extract_header_and_data(lines: &Vec<String>) -> Result<(Vec<String>, Vec<String>), String> {
+fn extract_header_and_data(lines: &[String]) -> Result<(Vec<String>, Vec<String>), String> {
     let (idx_header, idx_data) = find_chunk_tag_indices(&lines)?;
 
     // TODO: It would be nice to MOVE lines, instead of copying them.
     let header_lines: Vec<_> = lines[idx_header + 1..idx_data]
         .iter()
-        .map(|line| String::from(line))
+        .map(String::from)
         .collect();
 
     // TODO: Same here.
     let data_lines: Vec<_> = lines[idx_data + 1..]
         .iter()
-        .map(|line| String::from(line))
+        .map(String::from)
         .collect();
 
     Ok((header_lines, data_lines))
 }
 
-fn find_chunk_tag_indices(lines: &Vec<String>) -> Result<(usize, usize), String> {
+fn find_chunk_tag_indices(lines: &[String]) -> Result<(usize, usize), String> {
     let mut idx_header = 0usize;
     let mut idx_data = 0usize;
     let mut header_tag_found = false;

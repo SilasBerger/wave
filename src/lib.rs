@@ -52,5 +52,5 @@ fn assemble_fragments(
             track_spec.volume(),
         ));
     }
-    return fragment_specs;
+    fragment_specs
 }
