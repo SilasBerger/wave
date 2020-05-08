@@ -22,7 +22,7 @@ fn read_cmd_args() -> Option<(String, String)> {
 
 fn process_and_export(in_filename: &str, out_filename: &str) {
     let contents = read_input_or_exit(in_filename);
-    if let Err(e) = wave::export_wav_from_text(&contents, out_filename) {
+    if let Err(e) = wave::text_to_wav_export(&contents, out_filename) {
         eprintln!("Error: {}", e);
     } else {
         println!("Successfully exported {}", out_filename);

@@ -1,7 +1,6 @@
 use crate::pitch::{TwelveTET, PitchGenerator};
 use crate::parse::ParsedFragment;
 use crate::audio::{TrackSpec, FragmentSpec};
-use std::u16;
 
 pub mod pitch;
 pub mod audio;
@@ -9,14 +8,14 @@ pub mod util;
 pub mod output;
 pub mod parse;
 
-pub fn text_to_raw_audio(text: &str) -> Result<Vec<u16>, String> {
+pub fn text_to_raw_audio(text: &str) -> Result<Vec<f64>, String> {
     let (track_spec, fragments) = parse::parse(&text)?;
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let fragments = assemble_fragments(&fragments, &track_spec, &pitch_gen);
     build_raw_audio(&fragments, &track_spec)
 }
 
-pub fn export_wav_from_text(text: &str, out_filename: &str) -> Result<(), String> {
+pub fn text_to_wav_export(text: &str, out_filename: &str) -> Result<(), String> {
     let (track_spec, fragments) = parse::parse(&text)?;
     let pitch_gen = TwelveTET::new(track_spec.freq_a4());
     let fragments = assemble_fragments(&fragments, &track_spec, &pitch_gen);
@@ -26,7 +25,7 @@ pub fn export_wav_from_text(text: &str, out_filename: &str) -> Result<(), String
 
 
 
-fn build_raw_audio(fragments: &Vec<FragmentSpec>, track_spec: &TrackSpec) -> Result<Vec<u16>, String> {
+fn build_raw_audio(fragments: &Vec<FragmentSpec>, track_spec: &TrackSpec) -> Result<Vec<f64>, String> {
     Ok(audio::bounce(&fragments, &track_spec))
 }
 
