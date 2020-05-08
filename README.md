@@ -1,5 +1,5 @@
 # Wave
-Wave is a simple text-based synthesizer written in Rust. Note that this is mostly a toy project and an exercise, rather than a productive application.
+Wave is a simple text-based tone generator written in Rust. Note that this is mostly a toy project and an exercise, rather than a productive application.
 
 ## Usage
 First, build Wave by running `cargo build --release`. Then, use `target/release/wave` (or `target/release/wave.exe` on Windows) for all further steps, wherever the command `wave` is used.
